@@ -5,7 +5,7 @@ from comtypes import CLSCTX_ALL, CoInitialize
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 # ====== Settings ======
-VOLUME_URL      = 'https://akordha.ir/volume.php?mode=get'
+VOLUME_URL = 'https://example.com/volume.php?mode=get'
 POLL_INTERVAL   = 3      # seconds
 REQUEST_TIMEOUT = 5      # seconds
 # ======================
