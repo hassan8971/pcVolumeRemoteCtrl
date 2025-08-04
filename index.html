@@ -1,0 +1,183 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Volume Control (Polling)</title>
+  <style>
+    /* Base reset and box-sizing */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Fullscreen starry background */
+    body {
+      height: 100vh;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Animated twinkling stars */
+    @keyframes starTwinkle {
+      from { opacity: 0.3; }
+      to   { opacity: 0.8; }
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: starTwinkle infinite alternate;
+    }
+    /* generate some stars */
+    .star:nth-child(1) { width:2px; height:2px; top: 10%;  left: 25%;  animation-duration: 3s; }
+    .star:nth-child(2) { width:3px; height:3px; top: 20%;  left: 80%;  animation-duration: 5s; }
+    .star:nth-child(3) { width:1px; height:1px; top: 60%;  left: 40%;  animation-duration: 4s; }
+    .star:nth-child(4) { width:2px; height:2px; top: 75%;  left: 15%;  animation-duration: 6s; }
+    .star:nth-child(5) { width:3px; height:3px; top: 30%;  left: 55%;  animation-duration: 2s; }
+    .star:nth-child(6) { width:2px; height:2px; top: 85%;  left: 90%;  animation-duration: 7s; }
+    .star:nth-child(7) { width:1px; height:1px; top: 50%;  left: 70%;  animation-duration: 4.5s; }
+    .star:nth-child(8) { width:2px; height:2px; top: 40%;  left: 10%;  animation-duration: 5.5s; }
+
+    /* Container for slider and label */
+    .control-panel {
+      background: rgba(0,0,0,0.4);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #6bf, 0 0 20px #6bf;
+    }
+
+    /* Style range slider track */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 80%;
+      max-width: 400px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.2);
+      outline: none;
+      margin: 1rem 0;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    /* Slider thumb */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #6bf;
+      cursor: pointer;
+      box-shadow: 0 0 8px #6bf;
+      transition: transform 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* For Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #6bf;
+      cursor: pointer;
+      box-shadow: 0 0 8px #6bf;
+      transition: transform 0.2s ease;
+    }
+
+    /* Label showing percentage */
+    #volLabel {
+      font-size: 1.5rem;
+      display: inline-block;
+      min-width: 3rem;
+      text-shadow: 0 0 5px #6bf;
+    }
+
+    /* Footer styling */
+    footer {
+      position: absolute;
+      bottom: 1rem;
+      text-align: center;
+      width: 100%;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    footer a {
+      color: #6bf;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Twinkling stars -->
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+
+  <div class="control-panel">
+    <h1>Volume Control</h1>
+    <!-- Range slider for volume -->
+    <input type="range" id="volSlider" min="0" max="100" step="1" value="50"/>
+    <span id="volLabel">50%</span>
+  </div>
+
+  <script>
+    // Get references to slider and label
+    const slider = document.getElementById('volSlider');
+    const label  = document.getElementById('volLabel');
+
+    // On slider move, update label and send POST to server
+    slider.addEventListener('input', () => {
+      const val = slider.value;
+      label.textContent = val + '%';
+      fetch('volume.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'level=' + encodeURIComponent(val)
+      }).catch(console.error);
+    });
+
+    // On load, fetch current volume from server
+    fetch('volume.php?mode=get')
+      .then(r => r.json())
+      .then(data => {
+        slider.value = data.level;
+        label.textContent = data.level + '%';
+      })
+      .catch(console.error);
+  </script>
+
+  <!-- Footer with developer credit -->
+  <footer>
+    <!-- Developer credit section -->
+    <p>Developed By <a href="https://github.com/hassan8971" target="_blank">Hassan Mansouri</a></p>
+  </footer>
+</body>
+</html>
